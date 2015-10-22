@@ -16,7 +16,6 @@ class LoginVerification {
     var clientApi = UdacityClientApi()
     
     func verifyingUsersUdacityAccount (user: String?, pass: String?, completion: ((success: String) -> Void)?) {
-        
         let request = clientApi.configureRequest("login", email: user!, password: pass!, id: nil, firstName: nil, lastName: nil, locality: nil, mediaUrl: nil, latitude: nil, longitude: nil)
         
         clientApi.makeRequestAndParseData(request)
@@ -31,8 +30,11 @@ class LoginVerification {
                     LoginVerification.sharedInstance().currentUser.lastName = self.clientApi.useParsedData(jsonData, key: "user", value: "last_name")!
                    completion?(success: "true")
                 }
+            } else if jsonData!["error"] != nil {
+                let getError = jsonData!["error"]
+                completion?(success: "\(getError!!)")
             } else {
-                completion?(success: jsonData!["error"]! as! String)
+                completion?(success: "\(jsonData!)")
             }
         }
     }

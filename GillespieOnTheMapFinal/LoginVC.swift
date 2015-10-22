@@ -14,6 +14,9 @@ class LoginVC: UIViewController, UITextFieldDelegate {
     @IBOutlet weak var labelLoginSuggestions: UILabel!
     @IBOutlet weak var loginUsername: UITextField!
     @IBOutlet weak var loginPassword: UITextField!
+    @IBOutlet weak var loginButton: UIButton!
+    @IBOutlet weak var udacityIcon: UIImageView!
+    
     
     var verifyUser = LoginVerification()
     
@@ -23,10 +26,13 @@ class LoginVC: UIViewController, UITextFieldDelegate {
         
         if username.isEmpty && password.isEmpty{
             loginAlert("Empty Fields", alertMessage: "username & password")
+            startAnimation()
         } else if username.isEmpty {
             loginAlert("Empty Field", alertMessage: "username")
+            startAnimation()
         } else if password.isEmpty {
             loginAlert("Empty Field", alertMessage: "password")
+            startAnimation()
         } else {
             verifyUser.verifyingUsersUdacityAccount(username, pass: password) { success in
                 dispatch_async(dispatch_get_main_queue()) {
@@ -36,6 +42,7 @@ class LoginVC: UIViewController, UITextFieldDelegate {
                     } else {
                         self.resetTextFields()
                         self.loginAlert("failure to login", alertMessage: "\(success)")
+                        self.startAnimation()
                     }
                 }
             }
@@ -55,5 +62,23 @@ class LoginVC: UIViewController, UITextFieldDelegate {
     func resetTextFields(){
         self.loginUsername.text = ""
         self.loginPassword.text = ""
+    }
+    
+    func animateView(textField: AnyObject){
+        let animation = CABasicAnimation(keyPath: "position")
+        animation.duration = 0.07
+        animation.repeatCount = 4
+        animation.autoreverses = true
+        animation.fromValue = NSValue(CGPoint: CGPointMake(textField.center.x - 10, textField.center.y - 10))
+        animation.toValue = NSValue(CGPoint: CGPointMake(textField.center.x + 10, textField.center.y + 10))
+        textField.layer.addAnimation(animation, forKey: "position")
+    }
+    
+    func startAnimation(){
+        animateView(labelLoginSuggestions)
+        animateView(loginUsername)
+        animateView(loginPassword)
+        animateView(loginButton)
+        animateView(udacityIcon)
     }
 }

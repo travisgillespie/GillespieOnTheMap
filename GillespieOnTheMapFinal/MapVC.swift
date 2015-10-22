@@ -18,8 +18,8 @@ class MapVC: UIViewController, MKMapViewDelegate {
             mapView.delegate = self
         }
     }
-    
-    var studentLocations = StudentLocations()
+
+    var studentLocations = UdacityClientApi()
     
     override func viewWillAppear(animated: Bool) {
         appendStudentDataToPins()
@@ -65,12 +65,19 @@ class MapVC: UIViewController, MKMapViewDelegate {
         mapView.removeAnnotations(mapView.annotations)
 
         self.studentLocations.gatherStudentLocations() { success in
-            if success {
+            if success == "true" {
                 let loadStudentsOnMap = MKPointAnnotation()
-                loadStudentsOnMap.coordinate = CLLocationCoordinate2D(latitude: self.studentLocations.latitude!, longitude: self.studentLocations.longitude!)
-                loadStudentsOnMap.title = "\(self.studentLocations.firstName!) \(self.studentLocations.lastName!)"
-                if self.verifyUrl(self.studentLocations.mediaURL) {
-                    loadStudentsOnMap.subtitle = "\(self.studentLocations.mediaURL!)"
+
+                let firstName = UdacityClientApi.sharedInstance().studentDict["firstName"]!
+                let lastName = UdacityClientApi.sharedInstance().studentDict["lastName"]!
+                let mediaURL = UdacityClientApi.sharedInstance().studentDict["mediaURL"]! as! String
+                let latitude = UdacityClientApi.sharedInstance().studentDict["latitude"]! as! Double
+                let longitude = UdacityClientApi.sharedInstance().studentDict["longitude"]! as! Double
+                
+                loadStudentsOnMap.coordinate = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+                loadStudentsOnMap.title = "\(firstName) \(lastName)"
+                if self.verifyUrl(mediaURL) {
+                    loadStudentsOnMap.subtitle = "\(mediaURL)"
                 } else {
                     loadStudentsOnMap.subtitle = ""
                 }
@@ -78,7 +85,7 @@ class MapVC: UIViewController, MKMapViewDelegate {
                     self.mapView.addAnnotation(loadStudentsOnMap)
                 }
             } else {
-                print("map FAILURE")
+                self.loginAlert("map failure", alertMessage: "\(success)")
             }
         }
     }
@@ -90,5 +97,11 @@ class MapVC: UIViewController, MKMapViewDelegate {
             }
         }
         return false
+    }
+    
+    func loginAlert (alertTitle: String, alertMessage: String) {
+        let alertController = UIAlertController(title: "\(alertTitle)", message: "\(alertMessage)", preferredStyle: UIAlertControllerStyle.Alert)
+        alertController.addAction(UIAlertAction(title: "Dismiss", style: UIAlertActionStyle.Default,handler: nil))
+        self.presentViewController(alertController, animated: true, completion: nil)
     }
 }

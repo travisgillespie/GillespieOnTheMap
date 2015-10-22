@@ -10,7 +10,9 @@ import UIKit
 
 class TableVC: UITableViewController {
     
-    var studentLocations = StudentLocations()
+//    var studentLocations = StudentLocations()
+    var studentLocations = UdacityClientApi()
+    
     var fullName : [String] = []
     var url : [String] = []
     
@@ -19,7 +21,7 @@ class TableVC: UITableViewController {
     }
     
     override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 100
+        return UdacityClientApi.sharedInstance().studentArray.count
     }
     
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
@@ -46,10 +48,14 @@ class TableVC: UITableViewController {
     
     func appendStudentDataToCells(cell:UITableViewCell, indexPath:NSIndexPath ){
         self.studentLocations.gatherStudentLocations() { success in
-            if success {
-                self.fullName.append("\(self.studentLocations.firstName!) \(self.studentLocations.lastName!)")
-                if self.verifyUrl(self.studentLocations.mediaURL) {
-                    self.url.append("\(self.studentLocations.mediaURL)")
+            if success == "true" {
+                let firstName = UdacityClientApi.sharedInstance().studentDict["firstName"]!
+                let lastName = UdacityClientApi.sharedInstance().studentDict["lastName"]!
+                let mediaURL = UdacityClientApi.sharedInstance().studentDict["mediaURL"]! as! String
+                
+                self.fullName.append("\(firstName) \(lastName)")
+                if self.verifyUrl(mediaURL) {
+                    self.url.append("\(mediaURL)")
                 } else {
                     self.url.append("")
                 }
@@ -58,7 +64,7 @@ class TableVC: UITableViewController {
                     cell.detailTextLabel?.text = "\(self.url[indexPath.row])"
                 }
             } else {
-                print("table FAILURE")
+                self.loginAlert("table failure", alertMessage: "\(success)")
             }
         }
     }
@@ -70,5 +76,11 @@ class TableVC: UITableViewController {
             }
         }
         return false
+    }
+    
+    func loginAlert (alertTitle: String, alertMessage: String) {
+        let alertController = UIAlertController(title: "\(alertTitle)", message: "\(alertMessage)", preferredStyle: UIAlertControllerStyle.Alert)
+        alertController.addAction(UIAlertAction(title: "Dismiss", style: UIAlertActionStyle.Default,handler: nil))
+        self.presentViewController(alertController, animated: true, completion: nil)
     }
 }

@@ -47,8 +47,9 @@ class UdacityClientApi {
         let session = NSURLSession.sharedSession()
         let task = session.dataTaskWithRequest(request) { data, response, error in
             if error != nil {
-                print("SessionID Failed")
-                print("could not complete the request \(error)")
+                let getError = error!.localizedDescription
+                completionHandler?(jsonData: getError)
+                
             } else {
                 let newData = data!.subdataWithRange(NSMakeRange(5, data!.length - 5))
                 let parsedResult = (try! NSJSONSerialization.JSONObjectWithData(newData, options: NSJSONReadingOptions.AllowFragments)) as! NSDictionary
@@ -62,14 +63,50 @@ class UdacityClientApi {
         let session = NSURLSession.sharedSession()
         let task = session.dataTaskWithRequest(request) { data, response, error in
             if error != nil {
-                print("SessionID Failed")
-                print("could not complete the request \(error)")
+                let getError = error!.localizedDescription
+                completionHandler?(jsonData: getError)
             } else {
                 let parsedResult = (try! NSJSONSerialization.JSONObjectWithData(data!, options: NSJSONReadingOptions.AllowFragments)) as! NSDictionary
                 completionHandler?(jsonData: parsedResult)
+                
             }
         }
         task.resume()
+    }
+
+    
+    var studentArray : [AnyObject] = []
+    var studentDict = Dictionary<String,AnyObject>()
+    func gatherStudentLocations(completion: ((success: String) -> Void)?) {
+        
+        let request = self.configureRequest("getStudentLocations", email: nil, password: nil, id: nil, firstName: nil, lastName: nil, locality: nil, mediaUrl: nil, latitude: nil, longitude: nil)
+        
+        self.makeAnotherRequestAndParseData(request)
+            { jsonData in
+                if let results = jsonData!["results"] as? [[String:AnyObject]]{
+                    for students in results{
+                        
+                        let udacityStudent = UdacityStudents(dictionary: students)
+                        
+                        UdacityClientApi.sharedInstance().studentArray.append(["\(udacityStudent.createdAt!)","\(udacityStudent.firstName!)", "\(udacityStudent.lastName!)", "\(udacityStudent.latitude!)", "\(udacityStudent.longitude!)", "\(udacityStudent.mapString!)", "\(udacityStudent.mediaURL!)", "\(udacityStudent.objectId!)", "\(udacityStudent.uniqueKey!)", "\(udacityStudent.updatedAt!)"])
+
+                        UdacityClientApi.sharedInstance().studentDict.updateValue(udacityStudent.createdAt!, forKey: "createdAt")
+                        UdacityClientApi.sharedInstance().studentDict.updateValue(udacityStudent.firstName!, forKey: "firstName")
+                        UdacityClientApi.sharedInstance().studentDict.updateValue(udacityStudent.lastName!, forKey: "lastName")
+                        UdacityClientApi.sharedInstance().studentDict.updateValue(udacityStudent.latitude!, forKey: "latitude")
+                        UdacityClientApi.sharedInstance().studentDict.updateValue(udacityStudent.longitude!, forKey: "longitude")
+                        UdacityClientApi.sharedInstance().studentDict.updateValue(udacityStudent.mapString!, forKey: "mapString")
+                        UdacityClientApi.sharedInstance().studentDict.updateValue(udacityStudent.mediaURL!, forKey: "mediaURL")
+                        UdacityClientApi.sharedInstance().studentDict.updateValue(udacityStudent.objectId!, forKey: "objectId")
+                        UdacityClientApi.sharedInstance().studentDict.updateValue(udacityStudent.uniqueKey!, forKey: "uniqueKey")
+                        UdacityClientApi.sharedInstance().studentDict.updateValue(udacityStudent.updatedAt!, forKey: "updatedAt")
+
+                        completion?(success: "true")
+                    }
+                } else {
+                    completion?(success: "\(jsonData!)")
+                }
+        }
     }
     
     func useParsedData(jsonResponse: AnyObject?, key: String, value: String) -> String? {
@@ -80,5 +117,13 @@ class UdacityClientApi {
             result = sessionValue
         }
         return result
+    }
+    
+    class func sharedInstance() -> UdacityClientApi {
+        
+        struct Singleton {
+            static var sharedInstance = UdacityClientApi()
+        }
+        return Singleton.sharedInstance
     }
 }
