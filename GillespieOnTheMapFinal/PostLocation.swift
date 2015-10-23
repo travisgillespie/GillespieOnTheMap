@@ -143,7 +143,7 @@ class PostLocation: UIViewController {
                     self.switchIND("hide")
                 }
             } else {
-    //            print ("error \(error)")
+//                self.geoAlert("Geocode Error", alertMessage: "\(error!)")
             }
         }
     }

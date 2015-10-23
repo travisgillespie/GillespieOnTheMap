@@ -10,7 +10,6 @@ import UIKit
 
 class TableVC: UITableViewController {
     
-//    var studentLocations = StudentLocations()
     var studentLocations = UdacityClientApi()
     
     var fullName : [String] = []

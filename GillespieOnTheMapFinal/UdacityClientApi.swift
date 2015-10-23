@@ -24,7 +24,7 @@ class UdacityClientApi {
             request = NSMutableURLRequest(URL: NSURL(string: "https://www.udacity.com/api/users/\(id!)")!)
             return request
         case "getStudentLocations":
-            request = NSMutableURLRequest(URL: NSURL(string: "https://api.parse.com/1/classes/StudentLocation")!)
+            request = NSMutableURLRequest(URL: NSURL(string: "https://api.parse.com/1/classes/StudentLocation?order=-updatedAt")!)
             request.HTTPMethod = "GET"
             request.addValue("QrX47CA9cyuGewLdsL7o5Eb8iug6Em8ye0dnAbIr", forHTTPHeaderField: "X-Parse-Application-Id")
             request.addValue("QuWThTdiRmTux3YaDseUSEpUKo7aBYM737yKd4gY", forHTTPHeaderField: "X-Parse-REST-API-Key")
@@ -77,6 +77,7 @@ class UdacityClientApi {
     
     var studentArray : [AnyObject] = []
     var studentDict = Dictionary<String,AnyObject>()
+
     func gatherStudentLocations(completion: ((success: String) -> Void)?) {
         
         let request = self.configureRequest("getStudentLocations", email: nil, password: nil, id: nil, firstName: nil, lastName: nil, locality: nil, mediaUrl: nil, latitude: nil, longitude: nil)
@@ -85,10 +86,7 @@ class UdacityClientApi {
             { jsonData in
                 if let results = jsonData!["results"] as? [[String:AnyObject]]{
                     for students in results{
-                        
                         let udacityStudent = UdacityStudents(dictionary: students)
-                        
-                        UdacityClientApi.sharedInstance().studentArray.append(["\(udacityStudent.createdAt!)","\(udacityStudent.firstName!)", "\(udacityStudent.lastName!)", "\(udacityStudent.latitude!)", "\(udacityStudent.longitude!)", "\(udacityStudent.mapString!)", "\(udacityStudent.mediaURL!)", "\(udacityStudent.objectId!)", "\(udacityStudent.uniqueKey!)", "\(udacityStudent.updatedAt!)"])
 
                         UdacityClientApi.sharedInstance().studentDict.updateValue(udacityStudent.createdAt!, forKey: "createdAt")
                         UdacityClientApi.sharedInstance().studentDict.updateValue(udacityStudent.firstName!, forKey: "firstName")
@@ -100,6 +98,9 @@ class UdacityClientApi {
                         UdacityClientApi.sharedInstance().studentDict.updateValue(udacityStudent.objectId!, forKey: "objectId")
                         UdacityClientApi.sharedInstance().studentDict.updateValue(udacityStudent.uniqueKey!, forKey: "uniqueKey")
                         UdacityClientApi.sharedInstance().studentDict.updateValue(udacityStudent.updatedAt!, forKey: "updatedAt")
+                        
+                        UdacityClientApi.sharedInstance().studentArray.append(UdacityClientApi.sharedInstance().studentDict)
+//                        print("dict \(UdacityClientApi.sharedInstance().studentDict)")
 
                         completion?(success: "true")
                     }
